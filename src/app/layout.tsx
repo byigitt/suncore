@@ -5,8 +5,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Nightcore Music Creator',
-  description: 'Create nightcore versions of your favorite songs',
+  title: 'suncore',
+  description: 'transform your music into nightcore magic',
 }
 
 export default function RootLayout({
