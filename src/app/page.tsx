@@ -29,11 +29,6 @@ export default function Home() {
     }
   }
 
-  const handleDownload = async (format: 'mp3' | 'wav', blob: Blob) => {
-    const fileName = `${audioName.split('.')[0]}_processed.${format}`
-    saveAs(blob, fileName)
-  }
-
   const handleResetAudio = () => {
     setIsExiting(true)
     setTimeout(() => {
