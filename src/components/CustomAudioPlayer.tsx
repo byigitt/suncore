@@ -16,11 +16,10 @@ interface CustomAudioPlayerProps {
   speed: number
   reverbDecay: number
   bassBoost: number
-  onDownload: (format: 'mp3' | 'wav', blob: Blob) => void
   resetAudio: () => void
 }
 
-export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, speed, reverbDecay, bassBoost, onDownload, resetAudio }: CustomAudioPlayerProps) {
+export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, speed, reverbDecay, bassBoost, resetAudio }: CustomAudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -174,7 +173,6 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
     }
   
     const originalBuffer = playerRef.current.buffer;
-    const audioContext = new (window.AudioContext || window.AudioContext)();
     const newLength = Math.floor(originalBuffer.length / speed);
   
     const offlineContext = new OfflineAudioContext(
@@ -220,27 +218,7 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
     source.start();
   
     return offlineContext.startRendering();
-  }  
-  
-  // Helper to merge two audio buffers (silence + original)
-  function mergeBuffers(
-    buffer1: AudioBuffer,
-    buffer2: AudioBuffer,
-    context: AudioContext
-  ): AudioBuffer {
-    const numberOfChannels = buffer1.numberOfChannels;
-    const newLength = buffer1.length + buffer2.length;
-    const mergedBuffer = context.createBuffer(numberOfChannels, newLength, buffer1.sampleRate);
-  
-    for (let channel = 0; channel < numberOfChannels; channel++) {
-      const channelData = mergedBuffer.getChannelData(channel);
-      channelData.set(buffer1.getChannelData(channel));
-      channelData.set(buffer2.getChannelData(channel), buffer1.length);
-    }
-  
-    return mergedBuffer;
   }
-  
   
   const handleDownload = async (format: 'mp3' | 'wav') => {
     if (format === 'mp3') {
@@ -337,29 +315,6 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
   )
 }
 
-function createImpulseResponse(
-  context: AudioContext | OfflineAudioContext,
-  decay: number,
-  duration = 2,  // Shorter duration for subtle reverb
-  reverse = false
-): AudioBuffer {
-  const sampleRate = context.sampleRate;
-  const length = sampleRate * duration;
-  const impulse = context.createBuffer(2, length, sampleRate);
-
-  for (let channel = 0; channel < 2; channel++) {
-    const channelData = impulse.getChannelData(channel);
-    for (let i = 0; i < length; i++) {
-      const n = reverse ? length - i : i;
-      // Reduce randomness for subtle reverb
-      channelData[i] = (Math.random() * 2 - 1) * (1 - n / length) ** decay;
-    }
-  }
-
-  return impulse;
-}
-
-
 async function audioBufferToWav(audioBuffer: AudioBuffer): Promise<Blob> {
   const wavFile = await import('wavefile').then(m => new m.WaveFile())
   
@@ -373,36 +328,6 @@ async function audioBufferToWav(audioBuffer: AudioBuffer): Promise<Blob> {
   
   wavFile.fromScratch(audioBuffer.numberOfChannels, audioBuffer.sampleRate, '32f', interleavedSamples)
   return new Blob([wavFile.toBuffer()], { type: 'audio/wav' })
-}
-
-function normalizeWithBlocks(
-  samples: Float32Array,
-  noiseThreshold = 0.01,
-  noiseFloor = 0.001,
-  blockSize = 1024, // Process audio in small blocks
-): Int16Array {
-  const normalizedSamples = new Int16Array(samples.length);
-
-  for (let i = 0; i < samples.length; i += blockSize) {
-    const block = samples.subarray(i, i + blockSize);
-
-    // Find the max value in this block (local peak normalization)
-    let maxSample = Math.max(...block.map(Math.abs));
-    if (maxSample < noiseThreshold) maxSample = 0; // Ignore noise-like blocks
-
-    const scale = maxSample > 0 ? 32767 / maxSample : 1;
-
-    // Normalize this block and apply a noise gate
-    for (let j = 0; j < block.length; j++) {
-      let sample = block[j];
-      if (Math.abs(sample) < noiseFloor) sample = 0; // Noise gate
-
-      sample *= scale;
-      normalizedSamples[i + j] = Math.round(Math.max(-32767, Math.min(32767, sample)));
-    }
-  }
-
-  return normalizedSamples;
 }
 
 async function audioBufferToMp3(audioBuffer: AudioBuffer): Promise<Blob> {
