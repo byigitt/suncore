@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { saveAs } from 'file-saver'
 
 export default function Home() {
-  const [file, setFile] = useState<File | null>(null)
   const [volume, setVolume] = useState(100)
   const [speed, setSpeed] = useState(1)
   const [reverbDecay, setReverbDecay] = useState(0.01)
@@ -22,7 +21,6 @@ export default function Home() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0]
     if (uploadedFile) {
-      setFile(uploadedFile)
       setAudioSrc(URL.createObjectURL(uploadedFile))
       setAudioName(uploadedFile.name)
     } else {
@@ -39,7 +37,6 @@ export default function Home() {
   const handleResetAudio = () => {
     setIsExiting(true)
     setTimeout(() => {
-      setFile(null)
       setAudioSrc(null)
       setAudioName('')
       setIsExiting(false)
@@ -196,7 +193,6 @@ export default function Home() {
                   reverbDecay={reverbDecay}
                   bassBoost={bassBoost}
                   resetAudio={handleResetAudio}
-                  onDownload={handleDownload}
                 />
               </CardContent>
             </Card>
