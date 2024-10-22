@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CustomAudioPlayer } from "@/components/CustomAudioPlayer"
 import { Upload, Music } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { saveAs } from 'file-saver'
 
 export default function Home() {
   const [volume, setVolume] = useState(100)
