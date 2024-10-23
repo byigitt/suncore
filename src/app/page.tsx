@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CustomAudioPlayer } from "@/components/CustomAudioPlayer"
 import { Upload, Music } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useMediaQuery } from 'react-responsive'
 
 export default function Home() {
   const [volume, setVolume] = useState(100)
@@ -16,6 +17,7 @@ export default function Home() {
   const [audioSrc, setAudioSrc] = useState<string | null>(null)
   const [audioName, setAudioName] = useState<string>('')
   const [isExiting, setIsExiting] = useState(false)
+  const isMobile = useMediaQuery({ maxWidth: 767 })
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0]
@@ -58,14 +60,14 @@ export default function Home() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="container mx-auto p-4"
+      className="container mx-auto p-4 max-w-3xl"
     >
-      <header className="mb-12 text-center">
+      <header className="mb-8 md:mb-12 text-center">
         <motion.h1
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-bold text-purple-600 mt-4 leading-tight"
+          className="text-3xl md:text-4xl font-bold text-purple-600"
         >
           suncore
         </motion.h1>
@@ -73,7 +75,7 @@ export default function Home() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-lg text-gray-600 -mt-[7px]"
+          className="text-base md:text-lg text-gray-600"
         >
           transform your music into nightcore magic.
         </motion.p>
@@ -83,7 +85,7 @@ export default function Home() {
         {!audioSrc ? (
           <motion.div
             key="upload"
-            initial={{ opacity: 0, y: isExiting ? 30 : -30 }}
+            initial={{ opacity: 0, y: isExiting ? -30 : 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: isExiting ? 30 : -30 }}
             transition={{ duration: 0.2 }}
@@ -128,7 +130,7 @@ export default function Home() {
                 <CardTitle>Audio Controls</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4 md:gap-6">
                   <div>
                     <label className="block mb-2">Volume: {volume}%</label>
                     <Slider
@@ -187,6 +189,7 @@ export default function Home() {
                   reverbDecay={reverbDecay}
                   bassBoost={bassBoost}
                   resetAudio={handleResetAudio}
+                  isMobile={isMobile}
                 />
               </CardContent>
             </Card>
