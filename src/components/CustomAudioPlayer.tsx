@@ -17,9 +17,10 @@ interface CustomAudioPlayerProps {
   reverbDecay: number
   bassBoost: number
   resetAudio: () => void
+  isMobile: boolean
 }
 
-export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, speed, reverbDecay, bassBoost, resetAudio }: CustomAudioPlayerProps) {
+export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, speed, reverbDecay, bassBoost, resetAudio, isMobile }: CustomAudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -251,15 +252,10 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
   }
 
   return (
-    <motion.div 
-      className="flex flex-col gap-2"
-      initial={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 50 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="text-lg font-semibold mb-2">{audioName}</div>
-      <div className="flex items-center gap-4">
-        <Button onClick={togglePlayPause} variant="outline" size="icon">
+    <div className="flex flex-col gap-2">
+      <div className="text-base md:text-lg font-semibold mb-2 truncate">{audioName}</div>
+      <div className="flex items-center gap-2 md:gap-4">
+        <Button onClick={togglePlayPause} variant="outline" size={isMobile ? "sm" : "default"} className="min-w-[40px]">
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
         <div className="flex-grow">
@@ -271,16 +267,18 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
             onValueChange={handleSliderChange}
             className="mb-1"
           />
-          <div className="flex justify-between text-sm text-gray-500">
+          <div className="flex justify-between text-xs md:text-sm text-gray-500">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
         </div>
       </div>
-      <div className="flex justify-center gap-4 mt-4">
+      <div className={`flex flex-wrap justify-center gap-2 mt-4 ${isMobile ? 'flex-col' : ''}`}>
         <Button 
           onClick={() => handleDownload('mp3')} 
           disabled={isProcessingMp3 || isProcessingWav}
+          size={isMobile ? "sm" : "default"}
+          className={`${isMobile ? 'w-full' : ''}`}
         >
           {isProcessingMp3 ? (
             <>
@@ -294,6 +292,8 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
         <Button 
           onClick={() => handleDownload('wav')} 
           disabled={isProcessingMp3 || isProcessingWav}
+          size={isMobile ? "sm" : "default"}
+          className={`${isMobile ? 'w-full' : ''}`}
         >
           {isProcessingWav ? (
             <>
@@ -307,11 +307,13 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
         <Button 
           onClick={resetAudio} 
           disabled={isProcessingMp3 || isProcessingWav}
+          size={isMobile ? "sm" : "default"}
+          className={`${isMobile ? 'w-full' : ''}`}
         >
           Convert Another Song
         </Button>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
