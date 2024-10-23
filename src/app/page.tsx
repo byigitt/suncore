@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,8 +18,6 @@ export default function Home() {
   const [audioName, setAudioName] = useState<string>('')
   const [isExiting, setIsExiting] = useState(false)
   const isMobile = useMediaQuery({ maxWidth: 767 })
-  const [isResetting, setIsResetting] = useState(false)
-  const cleanupRef = useRef<(() => void) | null>(null)
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0]
@@ -43,10 +41,6 @@ export default function Home() {
       setBassBoost(0)
       setIsExiting(false)
     }, 200)
-  }, [])
-
-  const setCleanupFunction = useCallback((cleanup: () => void) => {
-    cleanupRef.current = cleanup
   }, [])
 
   const handleVolumeChange = (value: number[]) => {
