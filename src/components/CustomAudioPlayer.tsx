@@ -18,9 +18,20 @@ interface CustomAudioPlayerProps {
   bassBoost: number
   resetAudio: () => void
   isMobile: boolean
+  isExiting: boolean
 }
 
-export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, speed, reverbDecay, bassBoost, resetAudio, isMobile }: CustomAudioPlayerProps) {
+export function CustomAudioPlayer({ 
+  src, 
+  audioName = "Unknown Audio", 
+  volume, 
+  speed, 
+  reverbDecay, 
+  bassBoost, 
+  resetAudio, 
+  isMobile,
+  isExiting 
+}: CustomAudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -252,7 +263,13 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <motion.div 
+      className="flex flex-col gap-2"
+      initial={{ opacity: 0, y: isExiting ? -30 : 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: isExiting ? 30 : -30 }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="text-base md:text-lg font-semibold mb-2 truncate">{audioName}</div>
       <div className="flex items-center gap-2 md:gap-4">
         <Button onClick={togglePlayPause} variant="outline" size={isMobile ? "sm" : "default"} className="min-w-[40px]">
@@ -313,7 +330,7 @@ export function CustomAudioPlayer({ src, audioName = "Unknown Audio", volume, sp
           Convert Another Song
         </Button>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
