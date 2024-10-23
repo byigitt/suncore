@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +18,8 @@ export default function Home() {
   const [audioName, setAudioName] = useState<string>('')
   const [isExiting, setIsExiting] = useState(false)
   const isMobile = useMediaQuery({ maxWidth: 767 })
+  const [isResetting, setIsResetting] = useState(false)
+  const cleanupRef = useRef<(() => void) | null>(null)
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0]
@@ -30,14 +32,22 @@ export default function Home() {
     }
   }
 
-  const handleResetAudio = () => {
+  const resetAudio = useCallback(() => {
     setIsExiting(true)
     setTimeout(() => {
       setAudioSrc(null)
       setAudioName('')
+      setVolume(100)
+      setSpeed(1)
+      setReverbDecay(0.01)
+      setBassBoost(0)
       setIsExiting(false)
     }, 200)
-  }
+  }, [])
+
+  const setCleanupFunction = useCallback((cleanup: () => void) => {
+    cleanupRef.current = cleanup
+  }, [])
 
   const handleVolumeChange = (value: number[]) => {
     setVolume(value[0])
@@ -67,7 +77,7 @@ export default function Home() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="text-3xl md:text-4xl font-bold text-purple-600"
+          className="text-3xl md:text-4xl font-bold mt-16 text-purple-600"
         >
           suncore
         </motion.h1>
@@ -121,7 +131,7 @@ export default function Home() {
           <motion.div
             key="player"
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? 30 : 0 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
             transition={{ duration: 0.2 }}
           >
@@ -188,8 +198,9 @@ export default function Home() {
                   speed={speed}
                   reverbDecay={reverbDecay}
                   bassBoost={bassBoost}
-                  resetAudio={handleResetAudio}
+                  resetAudio={resetAudio}
                   isMobile={isMobile}
+                  isExiting={isExiting}
                 />
               </CardContent>
             </Card>
