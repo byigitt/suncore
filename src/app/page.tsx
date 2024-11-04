@@ -18,6 +18,7 @@ export default function Home() {
   const [audioName, setAudioName] = useState<string>('')
   const [isExiting, setIsExiting] = useState(false)
   const isMobile = useMediaQuery({ maxWidth: 767 })
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0]
@@ -57,6 +58,30 @@ export default function Home() {
 
   const handleBassBoostChange = (value: number[]) => {
     setBassBoost(value[0])
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    
+    const droppedFile = e.dataTransfer?.files?.[0]
+    if (droppedFile?.type.startsWith('audio/')) {
+      setAudioSrc(URL.createObjectURL(droppedFile))
+      setAudioName(droppedFile.name)
+    }
   }
 
   return (
@@ -108,13 +133,49 @@ export default function Home() {
                     whileTap={{ scale: 0.98 }}
                     className="flex items-center justify-center w-full"
                   >
-                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-300">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <Upload className="w-10 h-10 mb-3 text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                    <label
+                      htmlFor="dropzone-file"
+                      className={`
+                        flex flex-col items-center justify-center w-full h-64 
+                        border-2 border-dashed rounded-lg cursor-pointer 
+                        transition-all duration-300 ease-in-out
+                        ${isDragging 
+                          ? 'border-blue-500 bg-blue-50 scale-105' 
+                          : 'border-purple-400 bg-gray-50 hover:bg-purple-50'
+                        }
+                      `}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      <motion.div 
+                        className="flex flex-col items-center justify-center pt-5 pb-6"
+                        animate={{
+                          scale: isDragging ? 1.1 : 1,
+                          y: isDragging ? -10 : 0
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Upload 
+                          className={`w-10 h-10 mb-3 transition-colors duration-300 ${
+                            isDragging ? 'text-blue-500' : 'text-purple-500'
+                          }`} 
+                        />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">
+                            {isDragging ? 'Drop your audio file here' : 'Click to upload'}
+                          </span>
+                          {!isDragging && ' or drag and drop'}
+                        </p>
                         <p className="text-xs text-gray-500">MP3, WAV or OGG (MAX. 10MB)</p>
-                      </div>
-                      <Input id="dropzone-file" type="file" accept="audio/*" className="hidden" onChange={handleFileUpload} />
+                      </motion.div>
+                      <Input
+                        id="dropzone-file"
+                        type="file"
+                        accept="audio/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
                     </label>
                   </motion.div>
                 </div>
@@ -136,8 +197,11 @@ export default function Home() {
               <CardContent>
                 <div className="flex flex-col gap-4 md:gap-6">
                   <div>
-                    <label className="block mb-2">Volume: {volume}%</label>
+                    <label htmlFor="volume-slider" className="block mb-2">
+                      Volume: {volume}%
+                    </label>
                     <Slider
+                      id="volume-slider"
                       min={0}
                       max={100}
                       step={1}
@@ -146,8 +210,11 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <label className="block mb-2">Playback Speed: {speed.toFixed(2)}x</label>
+                    <label htmlFor="speed-slider" className="block mb-2">
+                      Playback Speed: {speed.toFixed(2)}x
+                    </label>
                     <Slider
+                      id="speed-slider"
                       min={0.5}
                       max={2}
                       step={0.01}
@@ -156,8 +223,11 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <label className="block mb-2">Reverb Decay: {reverbDecay.toFixed(2)}</label>
+                    <label htmlFor="reverb-slider" className="block mb-2">
+                      Reverb Decay: {reverbDecay.toFixed(2)}
+                    </label>
                     <Slider
+                      id="reverb-slider"
                       min={0.01}
                       max={10}
                       step={0.01}
@@ -166,8 +236,11 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <label className="block mb-2">Bass Boost: {bassBoost.toFixed(2)} dB</label>
+                    <label htmlFor="bass-slider" className="block mb-2">
+                      Bass Boost: {bassBoost.toFixed(2)} dB
+                    </label>
                     <Slider
+                      id="bass-slider"
                       min={0}
                       max={12}
                       step={0.1}
