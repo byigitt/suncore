@@ -8,6 +8,7 @@ import { CustomAudioPlayer } from "@/components/CustomAudioPlayer"
 import { Upload, Music } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMediaQuery } from 'react-responsive'
+import { UploadForm } from "@/components/UploadForm";
 
 export default function Home() {
   const [volume, setVolume] = useState(100)
@@ -83,6 +84,11 @@ export default function Home() {
       setAudioName(droppedFile.name)
     }
   }
+
+  const handleTrackSelect = (audioSrc: string, audioName: string) => {
+    setAudioSrc(audioSrc);
+    setAudioName(audioName);
+  };
 
   return (
     <motion.main
@@ -178,6 +184,8 @@ export default function Home() {
                       />
                     </label>
                   </motion.div>
+                  
+                  <UploadForm onTrackSelect={handleTrackSelect} />
                 </div>
               </CardContent>
             </Card>
