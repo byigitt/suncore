@@ -45,33 +45,60 @@ export function CustomAudioPlayer({
 
   useEffect(() => {
     if (src) {
-      const player = new Tone.Player(src)
-      const reverb = new Tone.Reverb()
-      const dryWet = new Tone.CrossFade(0)
-      const bassBoost = new Tone.EQ3()
+      const loadAudio = async () => {
+        try {
+          // Create a new audio context
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          
+          // Fetch the audio data
+          const response = await fetch(src);
+          const arrayBuffer = await response.arrayBuffer();
+          
+          // Decode the audio data
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          
+          // Create a new player with the decoded audio
+          const player = new Tone.Player().toDestination();
+          player.buffer.set(audioBuffer);
+          
+          const reverb = new Tone.Reverb();
+          const dryWet = new Tone.CrossFade(0);
+          const bassBoost = new Tone.EQ3();
 
-      player.chain(bassBoost, dryWet.a)
-      player.connect(reverb)
-      reverb.connect(dryWet.b)
-      dryWet.toDestination()
-      
-      playerRef.current = player
-      reverbRef.current = reverb
-      dryWetRef.current = dryWet
-      bassBoostRef.current = bassBoost
+          player.chain(bassBoost, dryWet.a);
+          player.connect(reverb);
+          reverb.connect(dryWet.b);
+          dryWet.toDestination();
+          
+          playerRef.current = player;
+          reverbRef.current = reverb;
+          dryWetRef.current = dryWet;
+          bassBoostRef.current = bassBoost;
 
-      player.load(src).then(() => {
-        setDuration(player.buffer.duration)
-      })
+          setDuration(audioBuffer.duration);
+        } catch (error) {
+          console.error('Error loading audio:', error);
+        }
+      };
+
+      loadAudio();
 
       return () => {
-        player.dispose()
-        reverb.dispose()
-        dryWet.dispose()
-        bassBoost.dispose()
-      }
+        if (playerRef.current) {
+          playerRef.current.dispose();
+        }
+        if (reverbRef.current) {
+          reverbRef.current.dispose();
+        }
+        if (dryWetRef.current) {
+          dryWetRef.current.dispose();
+        }
+        if (bassBoostRef.current) {
+          bassBoostRef.current.dispose();
+        }
+      };
     }
-  }, [src])
+  }, [src]);
 
   useEffect(() => {
     if (playerRef.current) {
