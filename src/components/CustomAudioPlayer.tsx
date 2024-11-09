@@ -48,7 +48,7 @@ export function CustomAudioPlayer({
       const loadAudio = async () => {
         try {
           // Create a new audio context
-          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const audioContext = new (window.AudioContext)();
           
           // Fetch the audio data
           const response = await fetch(src);
