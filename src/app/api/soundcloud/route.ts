@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import scdl from 'soundcloud-downloader';
-import { SoundcloudInfo, TrackResponse } from './types';
+import { safeDownload, safeGetInfo } from '@/lib/soundcloud-wrapper';
+import type { TrackResponse } from './types';
 import {
   streamToUrl,
   validateTrackInfo,
@@ -12,22 +12,12 @@ import {
 } from './utils';
 
 // Main API handler
-export async function OPTIONS() {
-  const headersList = await headers();
-  const origin = headersList.get('origin');
-
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(origin),
-  });
-}
-
 export async function POST(request: Request) {
   try {
     const headersList = await headers();
     const origin = headersList.get('origin');
     const ip = headersList.get('x-forwarded-for') || 'unknown';
-    
+    const clientId = process.env.SOUNDCLOUD_CLIENT_ID;
 
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
@@ -36,7 +26,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.SOUNDCLOUD_CLIENT_ID) {
+    if (!clientId) {
       console.error('Soundcloud client ID not configured');
       return NextResponse.json(
         { error: 'Server configuration error' },
@@ -45,17 +35,9 @@ export async function POST(request: Request) {
     }
 
     // Request validation
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid request body' },
-        { status: 400, headers: corsHeaders(origin) }
-      );
-    }
+    const body = await request.json().catch(() => ({}));
 
-    const { url } = body;
+    const { url } = body as { url?: string };
 
     if (!url || typeof url !== 'string' || !validateSoundcloudUrl(url)) {
       return NextResponse.json(
@@ -65,10 +47,10 @@ export async function POST(request: Request) {
     }
 
     try {
-      const info = await scdl.getInfo(url) as SoundcloudInfo;
+      const info = await safeGetInfo(url, clientId);
       validateTrackInfo(info);
 
-      const stream = await scdl.download(url);
+      const stream = await safeDownload(url, clientId);
       const audioUrl = await streamToUrl(stream);
 
       const response: TrackResponse = {
