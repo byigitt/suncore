@@ -1,0 +1,11 @@
+diff --git a/node_modules/soundcloud-downloader/src/download.ts b/node_modules/soundcloud-downloader/src/download.ts
+index xxxx..xxxx 100644
+--- a/node_modules/soundcloud-downloader/src/download.ts
++++ b/node_modules/soundcloud-downloader/src/download.ts
+@@ -50,7 +50,7 @@ export async function download(url: string, clientID: string, axiosInstance?: Axios
+     return getHLSStreamFunction(mediaUrl)
+   } catch (err) {
+-    throw handleRequestErrs(err)
++    throw handleRequestErrs(err as AxiosError)
+   }
+ } 
